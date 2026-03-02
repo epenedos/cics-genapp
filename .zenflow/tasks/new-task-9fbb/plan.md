@@ -98,20 +98,34 @@ Create PostgreSQL schema matching the COBOL data structures.
 
 ---
 
-### [ ] Step: Domain Models and Repository Layer
+### [x] Step: Domain Models and Repository Layer
+<!-- chat-id: 976c2a8c-8e97-4c9d-9323-3bd0eff13924 -->
 
 Implement Go domain models and data access layer.
 
-- [ ] Create `internal/models/customer.go` (Customer struct)
-- [ ] Create `internal/models/policy.go` (Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy)
-- [ ] Create `internal/models/claim.go` (Claim struct)
-- [ ] Create `internal/repository/db.go` (database connection pool)
-- [ ] Create `internal/repository/customer_repo.go` with CRUD operations
-- [ ] Create `internal/repository/policy_repo.go` with type-specific handling
-- [ ] Create `internal/repository/claim_repo.go`
-- [ ] Write unit tests for each repository
+- [x] Create `internal/models/customer.go` (Customer struct)
+- [x] Create `internal/models/policy.go` (Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy)
+- [x] Create `internal/models/claim.go` (Claim struct)
+- [x] Create `internal/repository/db.go` (database connection pool)
+- [x] Create `internal/repository/customer_repo.go` with CRUD operations
+- [x] Create `internal/repository/policy_repo.go` with type-specific handling
+- [x] Create `internal/repository/claim_repo.go`
+- [x] Write unit tests for each repository
 
-**Verification**: `go test ./internal/repository/...`
+**Verification**: `go test ./internal/repository/...` - PASSED (unit tests pass, integration tests skip when DB unavailable)
+
+**Files created:**
+- `internal/models/customer.go` - Customer domain model with null-safe getters
+- `internal/models/policy.go` - Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy models with PolicyType enum
+- `internal/models/claim.go` - Claim domain model
+- `internal/models/counter.go` - Counter model with predefined counter names
+- `internal/repository/db.go` - Database connection pool with transaction support
+- `internal/repository/helpers.go` - Null type conversion helpers
+- `internal/repository/customer_repo.go` - Full CRUD for customers (equivalent to LGACDB01, LGICDB01, LGUCDB01)
+- `internal/repository/policy_repo.go` - Full CRUD for all policy types with type-specific handling (equivalent to LGAPDB01, LGIPDB01, LGUPDB01, LGDPDB01)
+- `internal/repository/claim_repo.go` - Full CRUD for claims
+- `internal/repository/counter_repo.go` - Counter operations (atomic increment, get, set)
+- `internal/repository/*_test.go` - Comprehensive test suites for all repositories
 
 ---
 
