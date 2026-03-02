@@ -177,18 +177,59 @@ Implement business logic services (replacing COBOL US programs).
 
 ---
 
-### [ ] Step: OpenTUI Application Framework
+### [x] Step: OpenTUI Application Framework
+<!-- chat-id: 261496ed-e528-4539-af19-66e2a9fe2c3a -->
 
 Set up the terminal UI application structure.
 
-- [ ] Create `internal/ui/app.go` (main TUI application)
-- [ ] Create `internal/ui/components/form.go` (reusable form component)
-- [ ] Create `internal/ui/components/menu.go` (menu component with option selection)
-- [ ] Implement key bindings (Enter, Escape/PF3, Tab navigation)
-- [ ] Set up 24x80 fixed terminal dimensions
-- [ ] Create basic navigation between screens
+- [x] Create `internal/ui/app.go` (main TUI application)
+- [x] Create `internal/ui/components/form.go` (reusable form component)
+- [x] Create `internal/ui/components/menu.go` (menu component with option selection)
+- [x] Implement key bindings (Enter, Escape/PF3, Tab navigation)
+- [x] Set up 24x80 fixed terminal dimensions
+- [x] Create basic navigation between screens
 
-**Verification**: Build and run basic UI skeleton
+**Verification**: `go mod tidy && go build ./...` - PASSED, `go test ./...` - PASSED
+
+**Files created:**
+- `internal/ui/app.go` - Main TUI application with:
+  - Screen type enumeration (Customer, Motor, Endowment, House, Commercial, Claim)
+  - View interface for all screens
+  - Services container for dependency injection
+  - Page-based navigation with SwitchTo()
+  - Global key bindings (Escape/F3 for back, Ctrl+C/F12 for exit)
+  - Tab navigation between fields
+- `internal/ui/components/form.go` - Reusable form component with:
+  - Field types: Text, Numeric, Date, YesNo, Decimal
+  - Input validation and acceptance functions
+  - Tab/Backtab navigation between fields
+  - Required field validation
+  - Right-justify and zero-pad formatting
+  - Helper functions: FormatCustomerNum(), FormatPolicyNum()
+- `internal/ui/components/menu.go` - Menu component with:
+  - Numbered option selection (1-9)
+  - Enable/disable options
+  - Pre-built menus: CustomerMenu(), PolicyMenu(), CommercialPolicyMenu(), ClaimMenu()
+  - OperationType enum (Inquiry, Add, Delete, Update)
+- `internal/ui/components/screen.go` - Base screen layout matching BMS 24x80 format:
+  - Row 1: Screen ID + Title
+  - Rows 4-7: Menu area
+  - Rows 4-18: Form area
+  - Row 22: Option selection
+  - Row 24: Error/status message
+- `internal/ui/views/base.go` - Base view implementing common functionality
+- `internal/ui/views/main_menu.go` - Main navigation menu
+- `internal/ui/views/customer_placeholder.go` - Customer screen (SSMAPC1) with:
+  - All 10 form fields matching BMS definition
+  - Menu options: Inquiry, Add, Update
+  - Navigation to policy screens via F-keys
+- `internal/ui/views/policy_placeholders.go` - Policy and Claim screens:
+  - MotorPolicyView (SSMAPP1) - 13 fields
+  - EndowmentPolicyView (SSMAPP2) - 11 fields
+  - HousePolicyView (SSMAPP3) - 10 fields
+  - CommercialPolicyView (SSMAPP4) - 10 fields
+  - ClaimView (SSMAPP5) - 8 fields
+- Updated `cmd/genapp/main.go` with UI initialization and navigation wiring
 
 ---
 
