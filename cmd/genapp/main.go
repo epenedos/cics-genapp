@@ -4,11 +4,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/cicsdev/genapp/internal/config"
+	"github.com/cicsdev/genapp/internal/repository"
+	"github.com/cicsdev/genapp/internal/service"
 	"github.com/cicsdev/genapp/internal/ui"
 	"github.com/cicsdev/genapp/internal/ui/views"
 	"github.com/rs/zerolog"
@@ -21,9 +27,13 @@ const (
 	AppVersion = "1.0.0"
 )
 
+// exitCode is used to track the exit status
+var exitCode = 0
+
 func main() {
 	// Parse command line flags
 	showVersion := flag.Bool("version", false, "Show version information")
+	noDb := flag.Bool("no-db", false, "Run without database connection (demo mode)")
 	flag.Parse()
 
 	if *showVersion {
@@ -54,9 +64,30 @@ func main() {
 		Str("version", AppVersion).
 		Msg("Starting General Insurance Application")
 
-	// Create UI application
-	// Note: Services are nil for now - they will be wired up in the Integration step
-	app := ui.NewApp(nil)
+	// Initialize services (nil if running without database)
+	var services *ui.Services
+	var db *repository.DB
+
+	if !*noDb {
+		// Initialize database connection
+		db, err = initDatabase(cfg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Database connection failed: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Hint: Use --no-db flag to run in demo mode without database\n")
+			os.Exit(1)
+		}
+
+		// Create services with repositories
+		services = createServices(db)
+
+		// Initialize counters on startup
+		if err := initializeCounters(services.Counter); err != nil {
+			log.Warn().Err(err).Msg("Failed to initialize counters (non-fatal)")
+		}
+	}
+
+	// Create UI application with services
+	app := ui.NewApp(services)
 
 	// Create and register views
 	customerView := views.NewCustomerView()
@@ -66,14 +97,15 @@ func main() {
 	commercialView := views.NewCommercialPolicyView()
 	claimView := views.NewClaimView()
 
-	// Note: Services will be wired up in the Integration step
-	// When services are available, set them on all views:
-	// customerView.SetServices(customerSvc, policySvc, counterSvc)
-	// motorView.SetServices(customerSvc, policySvc, counterSvc)
-	// endowmentView.SetServices(customerSvc, policySvc, counterSvc)
-	// houseView.SetServices(customerSvc, policySvc, counterSvc)
-	// commercialView.SetServices(customerSvc, policySvc, counterSvc)
-	// claimView.SetServices(customerSvc, policySvc, counterSvc)
+	// Wire up services to all views
+	if services != nil {
+		customerView.SetServices(services.Customer, services.Policy, services.Counter)
+		motorView.SetServices(services.Customer, services.Policy, services.Counter)
+		endowmentView.SetServices(services.Customer, services.Policy, services.Counter)
+		houseView.SetServices(services.Customer, services.Policy, services.Counter)
+		commercialView.SetServices(services.Customer, services.Policy, services.Counter)
+		claimView.SetServices(services.Customer, services.Policy, services.Counter)
+	}
 
 	// Set up navigation callbacks
 	navigateTo := func(screen string) {
@@ -110,14 +142,112 @@ func main() {
 	app.RegisterView(ui.ScreenCommercial, commercialView)
 	app.RegisterView(ui.ScreenClaim, claimView)
 
+	// Set up graceful shutdown handling
+	shutdownChan := make(chan os.Signal, 1)
+	signal.Notify(shutdownChan, os.Interrupt, syscall.SIGTERM)
+
 	// Set cleanup handler
 	app.SetOnQuit(func() {
 		log.Info().Msg("Application shutting down")
+		if db != nil {
+			if err := db.Close(); err != nil {
+				log.Error().Err(err).Msg("Error closing database connection")
+			} else {
+				log.Info().Msg("Database connection closed")
+			}
+		}
 	})
+
+	// Handle SIGTERM/SIGINT in a goroutine
+	go func() {
+		<-shutdownChan
+		log.Info().Msg("Received shutdown signal")
+		app.Stop()
+	}()
 
 	// Run the application
 	if err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Application error: %v\n", err)
-		os.Exit(1)
+		exitCode = 1
 	}
+
+	os.Exit(exitCode)
+}
+
+// initDatabase establishes the database connection with retry logic.
+func initDatabase(cfg *config.Config) (*repository.DB, error) {
+	dbConfig := repository.DBConfig{
+		Host:            cfg.Database.Host,
+		Port:            cfg.Database.Port,
+		User:            cfg.Database.User,
+		Password:        cfg.Database.Password,
+		Database:        cfg.Database.DBName,
+		SSLMode:         cfg.Database.SSLMode,
+		MaxOpenConns:    25,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: 5 * time.Minute,
+	}
+
+	// Attempt connection with retry
+	var db *repository.DB
+	var err error
+	maxRetries := 3
+	for i := 0; i < maxRetries; i++ {
+		db, err = repository.NewDB(dbConfig)
+		if err == nil {
+			break
+		}
+		if i < maxRetries-1 {
+			log.Warn().Err(err).Int("attempt", i+1).Msg("Database connection failed, retrying...")
+			time.Sleep(time.Second * time.Duration(i+1))
+		}
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect after %d attempts: %w", maxRetries, err)
+	}
+
+	// Verify connection is alive
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := db.Ping(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("database ping failed: %w", err)
+	}
+
+	log.Info().
+		Str("host", cfg.Database.Host).
+		Int("port", cfg.Database.Port).
+		Str("database", cfg.Database.DBName).
+		Msg("Database connection established")
+
+	return db, nil
+}
+
+// createServices initializes all service instances with their dependencies.
+func createServices(db *repository.DB) *ui.Services {
+	// Create repositories
+	customerRepo := repository.NewCustomerRepository(db)
+	policyRepo := repository.NewPolicyRepository(db)
+	counterRepo := repository.NewCounterRepository(db)
+
+	// Create services with repositories
+	customerSvc := service.NewCustomerService(customerRepo, counterRepo)
+	policySvc := service.NewPolicyService(policyRepo, customerRepo, counterRepo)
+	counterSvc := service.NewCounterService(counterRepo)
+
+	return &ui.Services{
+		Customer: customerSvc,
+		Policy:   policySvc,
+		Counter:  counterSvc,
+	}
+}
+
+// initializeCounters ensures all application counters exist in the database.
+func initializeCounters(counterSvc *service.CounterService) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return counterSvc.InitializeCounters(ctx)
 }
