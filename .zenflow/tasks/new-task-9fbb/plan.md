@@ -129,26 +129,51 @@ Implement Go domain models and data access layer.
 
 ---
 
-### [ ] Step: Service Layer Implementation
+### [x] Step: Service Layer Implementation
+<!-- chat-id: 129dc343-bb9c-4a20-a352-05579bc675a4 -->
 
 Implement business logic services (replacing COBOL US programs).
 
-- [ ] Create `internal/service/customer_svc.go`:
+- [x] Create `internal/service/customer_svc.go`:
   - Add customer (LGACUS01 equivalent)
   - Get customer (LGICUS01 equivalent)
   - Update customer (LGUCUS01 equivalent)
-- [ ] Create `internal/service/policy_svc.go`:
+- [x] Create `internal/service/policy_svc.go`:
   - Add policy with type-specific details (LGAPOL01 equivalent)
   - Get policy (LGIPOL01 equivalent)
   - Update policy (LGUPOL01 equivalent)
   - Delete policy (LGDPOL01 equivalent)
-- [ ] Create `internal/service/counter_svc.go` (LGSETUP equivalent):
+- [x] Create `internal/service/counter_svc.go` (LGSETUP equivalent):
   - Generate customer numbers
   - Generate policy numbers
   - Atomic counter increments
-- [ ] Write unit tests for all services
+- [x] Write unit tests for all services
 
-**Verification**: `go test ./internal/service/...`
+**Verification**: `go test ./internal/service/...` - PASSED (unit tests pass, integration tests skip when DB unavailable)
+
+**Files created:**
+- `internal/service/customer_svc.go` - Customer service with:
+  - Add (LGACUS01 equivalent) with validation and counter tracking
+  - Get (LGICUS01 equivalent) with counter tracking
+  - Update (LGUCUS01 equivalent) with validation and counter tracking
+  - Delete, List, Search, Count operations
+  - Input validation matching COBOL PIC definitions
+  - Email format validation
+- `internal/service/policy_svc.go` - Policy service with:
+  - Add (LGAPOL01 equivalent) with type-specific validation
+  - Get (LGIPOL01 equivalent) with type-specific details
+  - Update (LGUPOL01 equivalent) with type-specific handling
+  - Delete (LGDPOL01 equivalent) with counter tracking
+  - GetByCustomer, List, ListByType operations
+  - Support for all 4 policy types (Motor, Endowment, House, Commercial)
+- `internal/service/counter_svc.go` - Counter service (LGSETUP equivalent) with:
+  - NextCustomerNumber, NextPolicyNumber, NextClaimNumber generation
+  - Counter get/set/increment/reset operations
+  - GetStatistics for application metrics
+  - InitializeCounters for startup
+- `internal/service/customer_svc_test.go` - Customer service tests
+- `internal/service/policy_svc_test.go` - Policy service tests
+- `internal/service/counter_svc_test.go` - Counter service tests
 
 ---
 
