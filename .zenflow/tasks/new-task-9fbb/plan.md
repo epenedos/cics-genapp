@@ -1,0 +1,411 @@
+# Spec and build
+
+## Configuration
+- **Artifacts Path**: {@artifacts_path} → `.zenflow/tasks/{task_id}`
+
+---
+
+## Agent Instructions
+
+Ask the user questions when anything is unclear or needs their input. This includes:
+- Ambiguous or incomplete requirements
+- Technical decisions that affect architecture or user experience
+- Trade-offs that require business context
+
+Do not make assumptions on important decisions — get clarification first.
+
+If you are blocked and need user clarification, mark the current step with `[!]` in plan.md before stopping.
+
+---
+
+## Workflow Steps
+
+### [x] Step: Technical Specification
+<!-- chat-id: 47dcfef4-15a8-44d3-9ce4-9ef09fc5609e -->
+
+**Complexity: HARD** - Full-stack migration of 30 COBOL programs to Go + OpenTUI
+
+Technical specification saved to `.zenflow/tasks/new-task-9fbb/spec.md` containing:
+- Current CICS/COBOL architecture analysis (30 programs, 4 BMS screens, 13 copybooks)
+- Target Go + OpenTUI architecture design
+- PostgreSQL database schema (replacing DB2 + VSAM)
+- Domain models and repository patterns
+- OpenTUI screen layouts matching BMS maps
+- REST API endpoint design
+- Phased migration strategy
+
+---
+
+### [x] Step: Project Foundation Setup
+<!-- chat-id: 17911c83-5cba-4fde-8fa0-b28fac6f3e02 -->
+
+Set up the Go project structure and dependencies.
+
+- [x] Initialize Go module (`go mod init`)
+- [x] Create project directory structure (`cmd/`, `internal/`, `migrations/`)
+- [x] Add dependencies: tview (OpenTUI), tcell, pq, sqlx, viper, zerolog
+- [x] Create `go.mod` and `go.sum`
+- [x] Set up basic configuration management (`internal/config/config.go`)
+- [x] Create initial `README.md` with setup instructions
+
+**Verification**: `go mod tidy && go build ./...` - PASSED
+
+**Files created:**
+- `go.mod` - Go module definition with all required dependencies
+- `go.sum` - Dependency checksums
+- `cmd/genapp/main.go` - Application entry point
+- `internal/config/config.go` - Configuration management with Viper
+- `docs/go-migration/README.md` - Setup and development instructions
+- Directory structure: `internal/{models,repository,service,handler,ui/{views,components}}`, `migrations/`, `scripts/`
+- Updated `.gitignore` with Go-specific patterns
+
+---
+
+### [x] Step: Database Schema and Migrations
+<!-- chat-id: 83a66761-2b7c-4058-87f5-963c610c4646 -->
+
+Create PostgreSQL schema matching the COBOL data structures.
+
+- [x] Create `migrations/001_initial_schema.sql` with all tables:
+  - customers (from DB2-CUSTOMER)
+  - policies (from DB2-POLICY)
+  - motor_policies (from DB2-MOTOR)
+  - endowment_policies (from DB2-ENDOWMENT)
+  - house_policies (from DB2-HOUSE)
+  - commercial_policies (from DB2-COMMERCIAL)
+  - claims (from DB2-CLAIM)
+  - counters (replacing Named Counters)
+- [x] Create sequences for customer_num, policy_num, claim_num
+- [x] Add `scripts/seed.sql` with test data
+- [x] Test migration on local PostgreSQL
+
+**Verification**: Run migrations and verify tables exist - PASSED
+
+**Files created:**
+- `migrations/001_initial_schema.sql` - Full PostgreSQL schema with:
+  - 8 tables: customers, policies, motor_policies, endowment_policies, house_policies, commercial_policies, claims, counters
+  - 3 sequences: customer_num_seq, policy_num_seq, claim_num_seq (starting at 1000000001)
+  - Helper functions: next_customer_num(), next_policy_num(), next_claim_num(), increment_counter()
+  - Auto-update triggers for updated_at timestamps
+  - Foreign key constraints and indexes
+  - Field sizes matching COBOL PIC definitions from lgcmarea.cpy and lgpolicy.cpy
+- `scripts/seed.sql` - Test data with:
+  - 10 sample customers
+  - 10 policies (3 motor, 2 endowment, 3 house, 2 commercial)
+  - 3 claims
+  - Initial counter values
+- `scripts/test_migration.sh` - Test script that runs PostgreSQL in Docker and validates migrations
+
+---
+
+### [x] Step: Domain Models and Repository Layer
+<!-- chat-id: 976c2a8c-8e97-4c9d-9323-3bd0eff13924 -->
+
+Implement Go domain models and data access layer.
+
+- [x] Create `internal/models/customer.go` (Customer struct)
+- [x] Create `internal/models/policy.go` (Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy)
+- [x] Create `internal/models/claim.go` (Claim struct)
+- [x] Create `internal/repository/db.go` (database connection pool)
+- [x] Create `internal/repository/customer_repo.go` with CRUD operations
+- [x] Create `internal/repository/policy_repo.go` with type-specific handling
+- [x] Create `internal/repository/claim_repo.go`
+- [x] Write unit tests for each repository
+
+**Verification**: `go test ./internal/repository/...` - PASSED (unit tests pass, integration tests skip when DB unavailable)
+
+**Files created:**
+- `internal/models/customer.go` - Customer domain model with null-safe getters
+- `internal/models/policy.go` - Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy models with PolicyType enum
+- `internal/models/claim.go` - Claim domain model
+- `internal/models/counter.go` - Counter model with predefined counter names
+- `internal/repository/db.go` - Database connection pool with transaction support
+- `internal/repository/helpers.go` - Null type conversion helpers
+- `internal/repository/customer_repo.go` - Full CRUD for customers (equivalent to LGACDB01, LGICDB01, LGUCDB01)
+- `internal/repository/policy_repo.go` - Full CRUD for all policy types with type-specific handling (equivalent to LGAPDB01, LGIPDB01, LGUPDB01, LGDPDB01)
+- `internal/repository/claim_repo.go` - Full CRUD for claims
+- `internal/repository/counter_repo.go` - Counter operations (atomic increment, get, set)
+- `internal/repository/*_test.go` - Comprehensive test suites for all repositories
+
+---
+
+### [x] Step: Service Layer Implementation
+<!-- chat-id: 129dc343-bb9c-4a20-a352-05579bc675a4 -->
+
+Implement business logic services (replacing COBOL US programs).
+
+- [x] Create `internal/service/customer_svc.go`:
+  - Add customer (LGACUS01 equivalent)
+  - Get customer (LGICUS01 equivalent)
+  - Update customer (LGUCUS01 equivalent)
+- [x] Create `internal/service/policy_svc.go`:
+  - Add policy with type-specific details (LGAPOL01 equivalent)
+  - Get policy (LGIPOL01 equivalent)
+  - Update policy (LGUPOL01 equivalent)
+  - Delete policy (LGDPOL01 equivalent)
+- [x] Create `internal/service/counter_svc.go` (LGSETUP equivalent):
+  - Generate customer numbers
+  - Generate policy numbers
+  - Atomic counter increments
+- [x] Write unit tests for all services
+
+**Verification**: `go test ./internal/service/...` - PASSED (unit tests pass, integration tests skip when DB unavailable)
+
+**Files created:**
+- `internal/service/customer_svc.go` - Customer service with:
+  - Add (LGACUS01 equivalent) with validation and counter tracking
+  - Get (LGICUS01 equivalent) with counter tracking
+  - Update (LGUCUS01 equivalent) with validation and counter tracking
+  - Delete, List, Search, Count operations
+  - Input validation matching COBOL PIC definitions
+  - Email format validation
+- `internal/service/policy_svc.go` - Policy service with:
+  - Add (LGAPOL01 equivalent) with type-specific validation
+  - Get (LGIPOL01 equivalent) with type-specific details
+  - Update (LGUPOL01 equivalent) with type-specific handling
+  - Delete (LGDPOL01 equivalent) with counter tracking
+  - GetByCustomer, List, ListByType operations
+  - Support for all 4 policy types (Motor, Endowment, House, Commercial)
+- `internal/service/counter_svc.go` - Counter service (LGSETUP equivalent) with:
+  - NextCustomerNumber, NextPolicyNumber, NextClaimNumber generation
+  - Counter get/set/increment/reset operations
+  - GetStatistics for application metrics
+  - InitializeCounters for startup
+- `internal/service/customer_svc_test.go` - Customer service tests
+- `internal/service/policy_svc_test.go` - Policy service tests
+- `internal/service/counter_svc_test.go` - Counter service tests
+
+---
+
+### [x] Step: OpenTUI Application Framework
+<!-- chat-id: 261496ed-e528-4539-af19-66e2a9fe2c3a -->
+
+Set up the terminal UI application structure.
+
+- [x] Create `internal/ui/app.go` (main TUI application)
+- [x] Create `internal/ui/components/form.go` (reusable form component)
+- [x] Create `internal/ui/components/menu.go` (menu component with option selection)
+- [x] Implement key bindings (Enter, Escape/PF3, Tab navigation)
+- [x] Set up 24x80 fixed terminal dimensions
+- [x] Create basic navigation between screens
+
+**Verification**: `go mod tidy && go build ./...` - PASSED, `go test ./...` - PASSED
+
+**Files created:**
+- `internal/ui/app.go` - Main TUI application with:
+  - Screen type enumeration (Customer, Motor, Endowment, House, Commercial, Claim)
+  - View interface for all screens
+  - Services container for dependency injection
+  - Page-based navigation with SwitchTo()
+  - Global key bindings (Escape/F3 for back, Ctrl+C/F12 for exit)
+  - Tab navigation between fields
+- `internal/ui/components/form.go` - Reusable form component with:
+  - Field types: Text, Numeric, Date, YesNo, Decimal
+  - Input validation and acceptance functions
+  - Tab/Backtab navigation between fields
+  - Required field validation
+  - Right-justify and zero-pad formatting
+  - Helper functions: FormatCustomerNum(), FormatPolicyNum()
+- `internal/ui/components/menu.go` - Menu component with:
+  - Numbered option selection (1-9)
+  - Enable/disable options
+  - Pre-built menus: CustomerMenu(), PolicyMenu(), CommercialPolicyMenu(), ClaimMenu()
+  - OperationType enum (Inquiry, Add, Delete, Update)
+- `internal/ui/components/screen.go` - Base screen layout matching BMS 24x80 format:
+  - Row 1: Screen ID + Title
+  - Rows 4-7: Menu area
+  - Rows 4-18: Form area
+  - Row 22: Option selection
+  - Row 24: Error/status message
+- `internal/ui/views/base.go` - Base view implementing common functionality
+- `internal/ui/views/main_menu.go` - Main navigation menu
+- `internal/ui/views/customer_placeholder.go` - Customer screen (SSMAPC1) with:
+  - All 10 form fields matching BMS definition
+  - Menu options: Inquiry, Add, Update
+  - Navigation to policy screens via F-keys
+- `internal/ui/views/policy_placeholders.go` - Policy and Claim screens:
+  - MotorPolicyView (SSMAPP1) - 13 fields
+  - EndowmentPolicyView (SSMAPP2) - 11 fields
+  - HousePolicyView (SSMAPP3) - 10 fields
+  - CommercialPolicyView (SSMAPP4) - 10 fields
+  - ClaimView (SSMAPP5) - 8 fields
+- Updated `cmd/genapp/main.go` with UI initialization and navigation wiring
+
+---
+
+### [x] Step: Customer Screen Implementation
+<!-- chat-id: 7af5a176-debc-4da1-b427-44bfb6003932 -->
+
+Implement the customer menu screen (SSMAPC1 equivalent).
+
+- [x] Create `internal/ui/views/customer.go`
+- [x] Layout: Title, menu options, form fields, error display
+- [x] Fields: Customer Number, First/Last Name, DOB, Address, Phone, Email
+- [x] Option dropdown: 1-Inquiry, 2-Add, 3-Delete, 4-Update
+- [x] Field validation (numeric for customer number, date format for DOB)
+- [x] Connect to customer service for operations
+- [x] Display error messages in error field
+
+**Verification**: `go build ./...` - PASSED, `go test ./...` - PASSED
+
+**Files updated:**
+- Renamed `internal/ui/views/customer_placeholder.go` to `internal/ui/views/customer.go`
+- `internal/ui/views/customer.go` - Full implementation with:
+  - Inquiry operation: retrieves customer by number and populates form
+  - Add operation: validates form, creates new customer, displays generated number
+  - Update operation: validates form, updates existing customer
+  - Form-to-service data mapping with `buildAddInput()` and `buildUpdateInput()`
+  - Service response to form mapping with `populateFormFromCustomer()`
+  - Date format validation (yyyy-mm-dd)
+  - Customer number formatting (10-digit with zero-padding)
+  - Comprehensive error handling with user-friendly messages
+  - F-key navigation to policy screens (F1=Motor, F2=Endowment, F4=House, F5=Commercial)
+
+---
+
+### [x] Step: Policy Screens Implementation
+<!-- chat-id: 67b23cb3-b161-4e41-b969-ed1262f76658 -->
+
+Implement the policy screens (SSMAPP1, SSMAPP2, SSMAPP3 equivalents).
+
+- [x] Create `internal/ui/views/motor.go` (Motor policy - SSMAPP1):
+  - Policy/Customer numbers, dates, car details, premium, accidents
+- [x] Create `internal/ui/views/endowment.go` (Endowment policy - SSMAPP2):
+  - Policy/Customer numbers, dates, fund details, Y/N checkboxes
+- [x] Create `internal/ui/views/house.go` (House policy - SSMAPP3):
+  - Policy/Customer numbers, property details
+- [x] Connect each screen to policy service
+- [x] Add navigation between customer and policy screens
+
+**Verification**: `go build ./...` - PASSED, `go test ./...` - PASSED
+
+**Files created:**
+- `internal/ui/views/motor.go` - Full Motor policy screen implementation with:
+  - Inquiry operation: retrieves motor policy by number and populates form
+  - Add operation: validates form, creates new motor policy, displays generated number
+  - Update operation: validates form, updates existing motor policy
+  - Delete operation: removes motor policy and clears form
+  - All 13 fields matching BMS SSMAPP1 definition (policy number, customer number, issue/expiry dates, car make/model/value, registration, colour, CC, manufacture date, accidents, premium)
+  - Form-to-service data mapping with `buildAddInput()` and `buildUpdateInput()`
+  - Service response to form mapping with `populateFormFromPolicy()`
+  - Date format validation (yyyy-mm-dd)
+  - F6 key navigation back to customer screen
+
+- `internal/ui/views/endowment.go` - Full Endowment policy screen implementation with:
+  - Inquiry, Add, Update, Delete operations
+  - All 11 fields matching BMS SSMAPP2 definition (policy number, customer number, issue/expiry dates, fund name, term, sum assured, life assured, with profits Y/N, equities Y/N, managed funds Y/N)
+  - Y/N checkbox handling for boolean fields
+  - F6 key navigation back to customer screen
+
+- `internal/ui/views/house.go` - Full House policy screen implementation with:
+  - Inquiry, Add, Update, Delete operations
+  - All 10 fields matching BMS SSMAPP3 definition (policy number, customer number, issue/expiry dates, property type, bedrooms, house value, house name, house number, postcode)
+  - F6 key navigation back to customer screen
+
+- Updated `internal/ui/views/policy_placeholders.go` - Kept Commercial and Claim as placeholders:
+  - CommercialPolicyView (SSMAPP4) - placeholder
+  - ClaimView (SSMAPP5) - placeholder
+
+- Updated `cmd/genapp/main.go` - Added comments for service wiring (to be completed in Integration step)
+
+---
+
+### [x] Step: Integration and Error Handling
+<!-- chat-id: 6d33262c-8e9a-420c-804a-06d8cc487b73 -->
+
+Wire up all components and add comprehensive error handling.
+
+- [x] Create `cmd/genapp/main.go` (entry point)
+- [x] Initialize database connection
+- [x] Create service instances with repositories
+- [x] Pass services to UI views
+- [x] Add transaction handling for multi-table operations
+- [x] Implement comprehensive error display
+- [x] Add graceful shutdown handling
+
+**Verification**: `go test ./... && go build -o bin/genapp ./cmd/genapp` - PASSED
+
+**Files updated:**
+- `cmd/genapp/main.go` - Complete integration with:
+  - Database connection initialization with retry logic (3 attempts)
+  - Configuration loading from environment variables or config file
+  - Repository instantiation (CustomerRepository, PolicyRepository, CounterRepository)
+  - Service creation with dependency injection (CustomerService, PolicyService, CounterService)
+  - Service wiring to all UI views via SetServices()
+  - Counter initialization on startup
+  - `--no-db` flag for demo mode without database
+  - `--version` flag for version information
+  - Graceful shutdown handling (SIGINT, SIGTERM)
+  - Database connection cleanup on exit
+  - Comprehensive error messages with user-friendly hints
+
+**Key integration points:**
+- `initDatabase()`: Creates DB connection with DBConfig, retry logic, and ping verification
+- `createServices()`: Wires repositories to services and returns ui.Services struct
+- `initializeCounters()`: Ensures all application counters exist in database
+- Navigation callbacks wired to all views
+- Signal handling with goroutine for SIGTERM/SIGINT
+
+**Transaction handling:**
+- Already implemented in `repository/policy_repo.go` using `db.WithTx()` for multi-table operations
+- Policy creation/updates are atomic (policy + type-specific details in one transaction)
+- Counter operations use atomic `increment_counter()` PostgreSQL function
+
+**Error display:**
+- Views use `truncateError()` to limit error message length to 50 chars
+- `extractValidationMessage()` extracts validation details from wrapped errors
+- User-friendly error messages for common cases (not found, invalid format, validation failed)
+
+---
+
+### [x] Step: Documentation and Final Testing
+<!-- chat-id: 4514c31f-6371-42f9-b04c-206345b81c31 -->
+
+Complete the migration with documentation and testing.
+
+- [x] Update `README.md` with:
+  - Setup instructions
+  - Database configuration
+  - Running the application
+  - Key mappings
+- [x] Run comprehensive test suite
+- [x] Build and verify final binary
+- [x] Write `{@artifacts_path}/report.md` with:
+  - What was implemented
+  - How the solution was tested
+  - Challenges encountered
+
+**Verification**: `go test ./... && go build -o bin/genapp ./cmd/genapp` - PASSED
+
+**Files created/updated:**
+- `docs/go-migration/README.md` - Comprehensive documentation with:
+  - Project structure overview
+  - Prerequisites and quick start guide
+  - Database setup instructions
+  - Configuration via YAML or environment variables
+  - Command line options (--version, --no-db)
+  - Full key bindings documentation (global keys, screen-specific keys, menu options)
+  - Screen field descriptions for Customer, Motor, Endowment, House screens
+  - Development instructions (testing, building)
+  - COBOL to Go mapping table
+  - Database schema documentation
+
+- `.zenflow/tasks/new-task-9fbb/report.md` - Migration report with:
+  - Executive summary
+  - Complete list of implemented files (~34 Go source files)
+  - COBOL to Go mapping summary
+  - Testing methodology and results (25 unit tests passing)
+  - Challenges encountered and solutions:
+    - BMS to tview field mapping
+    - COMMAREA data structures
+    - Named Counter Server replacement
+    - Policy type polymorphism
+    - 3270 terminal emulation
+  - Production recommendations
+
+**Test Results:**
+- Unit tests: 25 PASS
+- Integration tests: SKIP (expected without DB)
+- Build: SUCCESS
+- Version check: SUCCESS (genapp version 1.0.0)
+- Demo mode: VERIFIED (--no-db flag works)
