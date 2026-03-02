@@ -66,6 +66,15 @@ func main() {
 	commercialView := views.NewCommercialPolicyView()
 	claimView := views.NewClaimView()
 
+	// Note: Services will be wired up in the Integration step
+	// When services are available, set them on all views:
+	// customerView.SetServices(customerSvc, policySvc, counterSvc)
+	// motorView.SetServices(customerSvc, policySvc, counterSvc)
+	// endowmentView.SetServices(customerSvc, policySvc, counterSvc)
+	// houseView.SetServices(customerSvc, policySvc, counterSvc)
+	// commercialView.SetServices(customerSvc, policySvc, counterSvc)
+	// claimView.SetServices(customerSvc, policySvc, counterSvc)
+
 	// Set up navigation callbacks
 	navigateTo := func(screen string) {
 		switch screen {
