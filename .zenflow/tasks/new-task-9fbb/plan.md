@@ -20,50 +20,176 @@ If you are blocked and need user clarification, mark the current step with `[!]`
 
 ## Workflow Steps
 
-### [ ] Step: Technical Specification
+### [x] Step: Technical Specification
+<!-- chat-id: 47dcfef4-15a8-44d3-9ce4-9ef09fc5609e -->
 
-Assess the task's difficulty, as underestimating it leads to poor outcomes.
-- easy: Straightforward implementation, trivial bug fix or feature
-- medium: Moderate complexity, some edge cases or caveats to consider
-- hard: Complex logic, many caveats, architectural considerations, or high-risk changes
+**Complexity: HARD** - Full-stack migration of 30 COBOL programs to Go + OpenTUI
 
-Create a technical specification for the task that is appropriate for the complexity level:
-- Review the existing codebase architecture and identify reusable components.
-- Define the implementation approach based on established patterns in the project.
-- Identify all source code files that will be created or modified.
-- Define any necessary data model, API, or interface changes.
-- Describe verification steps using the project's test and lint commands.
-
-Save the output to `{@artifacts_path}/spec.md` with:
-- Technical context (language, dependencies)
-- Implementation approach
-- Source code structure changes
-- Data model / API / interface changes
-- Verification approach
-
-If the task is complex enough, create a detailed implementation plan based on `{@artifacts_path}/spec.md`:
-- Break down the work into concrete tasks (incrementable, testable milestones)
-- Each task should reference relevant contracts and include verification steps
-- Replace the Implementation step below with the planned tasks
-
-Rule of thumb for step size: each step should represent a coherent unit of work (e.g., implement a component, add an API endpoint, write tests for a module). Avoid steps that are too granular (single function).
-
-Important: unit tests must be part of each implementation task, not separate tasks. Each task should implement the code and its tests together, if relevant.
-
-Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warrant this breakdown, keep the Implementation step below as is.
+Technical specification saved to `.zenflow/tasks/new-task-9fbb/spec.md` containing:
+- Current CICS/COBOL architecture analysis (30 programs, 4 BMS screens, 13 copybooks)
+- Target Go + OpenTUI architecture design
+- PostgreSQL database schema (replacing DB2 + VSAM)
+- Domain models and repository patterns
+- OpenTUI screen layouts matching BMS maps
+- REST API endpoint design
+- Phased migration strategy
 
 ---
 
-### [ ] Step: Implementation
+### [ ] Step: Project Foundation Setup
 
-Implement the task according to the technical specification and general engineering best practices.
+Set up the Go project structure and dependencies.
 
-1. Break the task into steps where possible.
-2. Implement the required changes in the codebase
-3. If relevant, write unit tests alongside each change.
-4. Run relevant tests and linters in the end of each step.
-5. Perform basic manual verification if applicable.
-6. After completion, write a report to `{@artifacts_path}/report.md` describing:
-   - What was implemented
-   - How the solution was tested
-   - The biggest issues or challenges encountered
+- [ ] Initialize Go module (`go mod init`)
+- [ ] Create project directory structure (`cmd/`, `internal/`, `migrations/`)
+- [ ] Add dependencies: tview (OpenTUI), tcell, pq, sqlx, viper, zerolog
+- [ ] Create `go.mod` and `go.sum`
+- [ ] Set up basic configuration management (`internal/config/config.go`)
+- [ ] Create initial `README.md` with setup instructions
+
+**Verification**: `go mod tidy && go build ./...`
+
+---
+
+### [ ] Step: Database Schema and Migrations
+
+Create PostgreSQL schema matching the COBOL data structures.
+
+- [ ] Create `migrations/001_initial_schema.sql` with all tables:
+  - customers (from DB2-CUSTOMER)
+  - policies (from DB2-POLICY)
+  - motor_policies (from DB2-MOTOR)
+  - endowment_policies (from DB2-ENDOWMENT)
+  - house_policies (from DB2-HOUSE)
+  - commercial_policies (from DB2-COMMERCIAL)
+  - claims (from DB2-CLAIM)
+  - counters (replacing Named Counters)
+- [ ] Create sequences for customer_num, policy_num, claim_num
+- [ ] Add `scripts/seed.sql` with test data
+- [ ] Test migration on local PostgreSQL
+
+**Verification**: Run migrations and verify tables exist
+
+---
+
+### [ ] Step: Domain Models and Repository Layer
+
+Implement Go domain models and data access layer.
+
+- [ ] Create `internal/models/customer.go` (Customer struct)
+- [ ] Create `internal/models/policy.go` (Policy, MotorPolicy, EndowmentPolicy, HousePolicy, CommercialPolicy)
+- [ ] Create `internal/models/claim.go` (Claim struct)
+- [ ] Create `internal/repository/db.go` (database connection pool)
+- [ ] Create `internal/repository/customer_repo.go` with CRUD operations
+- [ ] Create `internal/repository/policy_repo.go` with type-specific handling
+- [ ] Create `internal/repository/claim_repo.go`
+- [ ] Write unit tests for each repository
+
+**Verification**: `go test ./internal/repository/...`
+
+---
+
+### [ ] Step: Service Layer Implementation
+
+Implement business logic services (replacing COBOL US programs).
+
+- [ ] Create `internal/service/customer_svc.go`:
+  - Add customer (LGACUS01 equivalent)
+  - Get customer (LGICUS01 equivalent)
+  - Update customer (LGUCUS01 equivalent)
+- [ ] Create `internal/service/policy_svc.go`:
+  - Add policy with type-specific details (LGAPOL01 equivalent)
+  - Get policy (LGIPOL01 equivalent)
+  - Update policy (LGUPOL01 equivalent)
+  - Delete policy (LGDPOL01 equivalent)
+- [ ] Create `internal/service/counter_svc.go` (LGSETUP equivalent):
+  - Generate customer numbers
+  - Generate policy numbers
+  - Atomic counter increments
+- [ ] Write unit tests for all services
+
+**Verification**: `go test ./internal/service/...`
+
+---
+
+### [ ] Step: OpenTUI Application Framework
+
+Set up the terminal UI application structure.
+
+- [ ] Create `internal/ui/app.go` (main TUI application)
+- [ ] Create `internal/ui/components/form.go` (reusable form component)
+- [ ] Create `internal/ui/components/menu.go` (menu component with option selection)
+- [ ] Implement key bindings (Enter, Escape/PF3, Tab navigation)
+- [ ] Set up 24x80 fixed terminal dimensions
+- [ ] Create basic navigation between screens
+
+**Verification**: Build and run basic UI skeleton
+
+---
+
+### [ ] Step: Customer Screen Implementation
+
+Implement the customer menu screen (SSMAPC1 equivalent).
+
+- [ ] Create `internal/ui/views/customer.go`
+- [ ] Layout: Title, menu options, form fields, error display
+- [ ] Fields: Customer Number, First/Last Name, DOB, Address, Phone, Email
+- [ ] Option dropdown: 1-Inquiry, 2-Add, 3-Delete, 4-Update
+- [ ] Field validation (numeric for customer number, date format for DOB)
+- [ ] Connect to customer service for operations
+- [ ] Display error messages in error field
+
+**Verification**: Manual testing of customer CRUD operations
+
+---
+
+### [ ] Step: Policy Screens Implementation
+
+Implement the policy screens (SSMAPP1, SSMAPP2, SSMAPP3 equivalents).
+
+- [ ] Create `internal/ui/views/motor.go` (Motor policy - SSMAPP1):
+  - Policy/Customer numbers, dates, car details, premium, accidents
+- [ ] Create `internal/ui/views/endowment.go` (Endowment policy - SSMAPP2):
+  - Policy/Customer numbers, dates, fund details, Y/N checkboxes
+- [ ] Create `internal/ui/views/house.go` (House policy - SSMAPP3):
+  - Policy/Customer numbers, property details
+- [ ] Connect each screen to policy service
+- [ ] Add navigation between customer and policy screens
+
+**Verification**: Manual testing of each policy type CRUD
+
+---
+
+### [ ] Step: Integration and Error Handling
+
+Wire up all components and add comprehensive error handling.
+
+- [ ] Create `cmd/genapp/main.go` (entry point)
+- [ ] Initialize database connection
+- [ ] Create service instances with repositories
+- [ ] Pass services to UI views
+- [ ] Add transaction handling for multi-table operations
+- [ ] Implement comprehensive error display
+- [ ] Add graceful shutdown handling
+
+**Verification**: End-to-end test of complete workflow
+
+---
+
+### [ ] Step: Documentation and Final Testing
+
+Complete the migration with documentation and testing.
+
+- [ ] Update `README.md` with:
+  - Setup instructions
+  - Database configuration
+  - Running the application
+  - Key mappings
+- [ ] Create comparison test: same operations on COBOL vs Go
+- [ ] Performance testing
+- [ ] Write `{@artifacts_path}/report.md` with:
+  - What was implemented
+  - How the solution was tested
+  - Challenges encountered
+
+**Verification**: `go test ./... && go build -o bin/genapp ./cmd/genapp`
