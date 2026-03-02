@@ -61,11 +61,12 @@ Set up the Go project structure and dependencies.
 
 ---
 
-### [ ] Step: Database Schema and Migrations
+### [x] Step: Database Schema and Migrations
+<!-- chat-id: 83a66761-2b7c-4058-87f5-963c610c4646 -->
 
 Create PostgreSQL schema matching the COBOL data structures.
 
-- [ ] Create `migrations/001_initial_schema.sql` with all tables:
+- [x] Create `migrations/001_initial_schema.sql` with all tables:
   - customers (from DB2-CUSTOMER)
   - policies (from DB2-POLICY)
   - motor_policies (from DB2-MOTOR)
@@ -74,11 +75,26 @@ Create PostgreSQL schema matching the COBOL data structures.
   - commercial_policies (from DB2-COMMERCIAL)
   - claims (from DB2-CLAIM)
   - counters (replacing Named Counters)
-- [ ] Create sequences for customer_num, policy_num, claim_num
-- [ ] Add `scripts/seed.sql` with test data
-- [ ] Test migration on local PostgreSQL
+- [x] Create sequences for customer_num, policy_num, claim_num
+- [x] Add `scripts/seed.sql` with test data
+- [x] Test migration on local PostgreSQL
 
-**Verification**: Run migrations and verify tables exist
+**Verification**: Run migrations and verify tables exist - PASSED
+
+**Files created:**
+- `migrations/001_initial_schema.sql` - Full PostgreSQL schema with:
+  - 8 tables: customers, policies, motor_policies, endowment_policies, house_policies, commercial_policies, claims, counters
+  - 3 sequences: customer_num_seq, policy_num_seq, claim_num_seq (starting at 1000000001)
+  - Helper functions: next_customer_num(), next_policy_num(), next_claim_num(), increment_counter()
+  - Auto-update triggers for updated_at timestamps
+  - Foreign key constraints and indexes
+  - Field sizes matching COBOL PIC definitions from lgcmarea.cpy and lgpolicy.cpy
+- `scripts/seed.sql` - Test data with:
+  - 10 sample customers
+  - 10 policies (3 motor, 2 endowment, 3 house, 2 commercial)
+  - 3 claims
+  - Initial counter values
+- `scripts/test_migration.sh` - Test script that runs PostgreSQL in Docker and validates migrations
 
 ---
 
