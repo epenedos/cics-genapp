@@ -32,7 +32,7 @@ func NewEndowmentPolicyView() *EndowmentPolicyView {
 	// Create the menu matching SSMAPP2
 	v.menu = components.PolicyMenu()
 
-	// Create the form with endowment policy fields
+	// Create the form with endowment policy fields (BMS positions from SSMAPP2)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Number",
@@ -43,6 +43,9 @@ func NewEndowmentPolicyView() *EndowmentPolicyView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Cust Number",
@@ -52,27 +55,39 @@ func NewEndowmentPolicyView() *EndowmentPolicyView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          5,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Issue date",
-		Name:      "issue_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Issue date",
+		Name:        "issue_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         6,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Expiry date",
-		Name:      "expiry_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Expiry date",
+		Name:        "expiry_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Fund Name",
-		Name:      "fund_name",
-		MaxLength: 10,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Fund Name",
+		Name:        "fund_name",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         8,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Term (years)",
@@ -81,6 +96,9 @@ func NewEndowmentPolicyView() *EndowmentPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          9,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Sum Assured",
@@ -89,34 +107,49 @@ func NewEndowmentPolicyView() *EndowmentPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          10,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Life Assured",
-		Name:      "life_assured",
-		MaxLength: 31,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Life Assured",
+		Name:        "life_assured",
+		MaxLength:   31,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "With Profits",
-		Name:      "with_profits",
-		MaxLength: 1,
-		FieldType: components.FieldTypeYesNo,
-		Editable:  true,
+		Label:       "With Profits",
+		Name:        "with_profits",
+		MaxLength:   1,
+		FieldType:   components.FieldTypeYesNo,
+		Editable:    true,
+		Row:         12,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Equities",
-		Name:      "equities",
-		MaxLength: 1,
-		FieldType: components.FieldTypeYesNo,
-		Editable:  true,
+		Label:       "Equities",
+		Name:        "equities",
+		MaxLength:   1,
+		FieldType:   components.FieldTypeYesNo,
+		Editable:    true,
+		Row:         13,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Managed Funds",
-		Name:      "managed_fund",
-		MaxLength: 1,
-		FieldType: components.FieldTypeYesNo,
-		Editable:  true,
+		Label:       "Managed Funds",
+		Name:        "managed_fund",
+		MaxLength:   1,
+		FieldType:   components.FieldTypeYesNo,
+		Editable:    true,
+		Row:         14,
+		LabelColumn: 30,
+		Column:      50,
 	})
 
 	// Set up the screen

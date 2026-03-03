@@ -35,7 +35,7 @@ func NewCustomerView() *CustomerView {
 	v.menu.AddOption("3", "", false) // Reserved/blank in original
 	v.menu.AddOption("4", "Cust Update", true)
 
-	// Create the form with customer fields
+	// Create the form with customer fields (BMS positions from SSMAPC1)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Cust Number",
@@ -46,69 +46,99 @@ func NewCustomerView() *CustomerView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "First Name",
-		Name:      "first_name",
-		MaxLength: 10,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "First Name",
+		Name:        "first_name",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         5,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Last Name",
-		Name:      "last_name",
-		MaxLength: 20,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Last Name",
+		Name:        "last_name",
+		MaxLength:   20,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         6,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "DOB",
-		Name:      "dob",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "DOB",
+		Name:        "dob",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "House Name",
-		Name:      "house_name",
-		MaxLength: 20,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "House Name",
+		Name:        "house_name",
+		MaxLength:   20,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         8,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "House Number",
-		Name:      "house_number",
-		MaxLength: 4,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "House Number",
+		Name:        "house_number",
+		MaxLength:   4,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         9,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Postcode",
-		Name:      "postcode",
-		MaxLength: 8,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Postcode",
+		Name:        "postcode",
+		MaxLength:   8,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         10,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Phone: Home",
-		Name:      "phone_home",
-		MaxLength: 20,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Phone: Home",
+		Name:        "phone_home",
+		MaxLength:   20,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Phone: Mob",
-		Name:      "phone_mobile",
-		MaxLength: 20,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Phone: Mob",
+		Name:        "phone_mobile",
+		MaxLength:   20,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         12,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Email Addr",
-		Name:      "email_address",
-		MaxLength: 27,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Email Addr",
+		Name:        "email_address",
+		MaxLength:   27,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         13,
+		LabelColumn: 30,
+		Column:      50,
 	})
 
 	// Set up the screen

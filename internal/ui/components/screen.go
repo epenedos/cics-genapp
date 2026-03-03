@@ -125,7 +125,28 @@ func (s *Screen) SetForm(form *Form) *Screen {
 	form.SetErrorView(s.errorArea)
 	s.formArea.Clear()
 
-	// Add each field as a row with label and input
+	// Check if any field has position data
+	hasPositionData := false
+	for _, field := range form.Fields() {
+		if field.Row > 0 && field.Column > 0 {
+			hasPositionData = true
+			break
+		}
+	}
+
+	if hasPositionData {
+		// Use position-based layout matching BMS coordinates
+		s.setFormWithPositions(form)
+	} else {
+		// Fall back to legacy sequential layout
+		s.setFormSequential(form)
+	}
+
+	return s
+}
+
+// setFormSequential renders fields in sequential order (legacy behavior).
+func (s *Screen) setFormSequential(form *Form) {
 	for _, field := range form.Fields() {
 		row := tview.NewFlex().SetDirection(tview.FlexColumn)
 		row.AddItem(field.LabelView(), 16, 0, false)
@@ -136,8 +157,121 @@ func (s *Screen) SetForm(form *Form) *Screen {
 		row.AddItem(spacer, 0, 1, false)
 		s.formArea.AddItem(row, 1, 0, true)
 	}
+}
 
-	return s
+// setFormWithPositions renders fields at their BMS-specified positions.
+// BMS uses 1-indexed row/column positions on a 24x80 terminal.
+// The form area starts at screen row 4 (BMS row 4), so we offset accordingly.
+func (s *Screen) setFormWithPositions(form *Form) {
+	// Group fields by their row position
+	rowFields := make(map[int][]*FormField)
+	minRow := 999
+	maxRow := 0
+
+	for _, field := range form.Fields() {
+		if field.Row > 0 {
+			rowFields[field.Row] = append(rowFields[field.Row], field)
+			if field.Row < minRow {
+				minRow = field.Row
+			}
+			if field.Row > maxRow {
+				maxRow = field.Row
+			}
+		}
+	}
+
+	// Create rows from minRow to maxRow
+	for row := minRow; row <= maxRow; row++ {
+		fields := rowFields[row]
+		if len(fields) == 0 {
+			// Empty row - add a spacer
+			spacer := tview.NewBox()
+			spacer.SetBackgroundColor(tcell.ColorDefault)
+			s.formArea.AddItem(spacer, 1, 0, false)
+			continue
+		}
+
+		// Create a flex row for this line
+		rowFlex := tview.NewFlex().SetDirection(tview.FlexColumn)
+
+		// Sort fields by their column position
+		sortedFields := sortFieldsByColumn(fields)
+
+		// The form area column offset - labels start at column 30 in BMS
+		// which maps to column 0 in our form area (since form area starts at grid column 2)
+		const formAreaStartCol = 30
+
+		currentCol := formAreaStartCol
+
+		for _, field := range sortedFields {
+			labelCol := field.LabelColumn
+			if labelCol == 0 {
+				labelCol = formAreaStartCol // Default to column 30
+			}
+			inputCol := field.Column
+			if inputCol == 0 {
+				inputCol = labelCol + 20 // Default offset
+			}
+
+			// Add spacer before label if needed
+			if labelCol > currentCol {
+				spacerWidth := labelCol - currentCol
+				spacer := tview.NewBox()
+				spacer.SetBackgroundColor(tcell.ColorDefault)
+				rowFlex.AddItem(spacer, spacerWidth, 0, false)
+				currentCol = labelCol
+			}
+
+			// Calculate label width (from labelCol to inputCol)
+			labelWidth := inputCol - labelCol
+			if labelWidth < 1 {
+				labelWidth = 16 // Minimum label width
+			}
+
+			// Add label
+			rowFlex.AddItem(field.LabelView(), labelWidth, 0, false)
+			currentCol += labelWidth
+
+			// Add input field
+			inputWidth := field.MaxLength + 2 // +2 for input field padding
+			rowFlex.AddItem(field.InputField(), inputWidth, 0, true)
+			currentCol += inputWidth
+		}
+
+		// Add trailing spacer to fill the rest of the row
+		spacer := tview.NewBox()
+		spacer.SetBackgroundColor(tcell.ColorDefault)
+		rowFlex.AddItem(spacer, 0, 1, false)
+
+		s.formArea.AddItem(rowFlex, 1, 0, true)
+	}
+}
+
+// sortFieldsByColumn sorts fields by their LabelColumn or Column position.
+func sortFieldsByColumn(fields []*FormField) []*FormField {
+	// Simple insertion sort since we typically have few fields per row
+	result := make([]*FormField, len(fields))
+	copy(result, fields)
+
+	for i := 1; i < len(result); i++ {
+		j := i
+		for j > 0 && getFieldStartCol(result[j-1]) > getFieldStartCol(result[j]) {
+			result[j-1], result[j] = result[j], result[j-1]
+			j--
+		}
+	}
+	return result
+}
+
+// getFieldStartCol returns the starting column for a field (label column or input column).
+func getFieldStartCol(f *FormField) int {
+	if f.LabelColumn > 0 {
+		return f.LabelColumn
+	}
+	if f.Column > 0 {
+		return f.Column
+	}
+	return 30 // Default BMS form area start
 }
 
 // SetOnEnter sets the callback for Enter key press.
