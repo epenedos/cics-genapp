@@ -132,3 +132,58 @@ After implementation:
 4. Verify menu selection is reset
 5. Verify application can still be exited (Esc/F3 on main screens, Ctrl+C)
 6. Verify Tab/Shift-Tab navigation works correctly after clear
+
+## Implementation Notes
+
+### Changes Made
+
+**File: `internal/ui/app.go`** (lines 145-150)
+
+Changed F12 from application exit to clear screen functionality:
+
+```go
+// Before:
+case tcell.KeyF12:
+    // Exit application
+    a.Stop()
+    return nil
+
+// After:
+case tcell.KeyF12:
+    // Clear screen (3270 Master Clear)
+    if view := a.CurrentView(); view != nil {
+        view.Clear()
+    }
+    return nil
+```
+
+### Implementation Approach
+
+Instead of adding F12 handlers to each individual view file, the implementation leverages the existing global key handler in `app.go`. This approach:
+
+1. **Single point of change** - Only one file modified instead of 7
+2. **Uses existing View interface** - All views already implement `Clear()` method
+3. **Consistent behavior** - Same clear behavior across all screens
+4. **Maintainable** - Future views automatically get F12 clear support
+
+### Test Results
+
+- All existing tests pass (`go test ./...`)
+- Application builds successfully (`go build ./...`)
+- No regressions in existing functionality
+
+### Updated Key Mappings
+
+| Key | Function | Notes |
+|-----|----------|-------|
+| Esc | Back/Exit (PF3 equivalent) | Exits on Customer/Main screens |
+| F3 | Back/Exit (same as Esc) | - |
+| F12 | **Clear Screen** | 3270 Master Clear |
+| Ctrl+C | Emergency exit | - |
+
+### Exit Methods Still Available
+
+Users can still exit the application via:
+- **Esc** on Customer or Main screen
+- **F3** on Customer or Main screen
+- **Ctrl+C** anywhere (emergency exit)

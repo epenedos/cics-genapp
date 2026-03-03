@@ -143,8 +143,10 @@ func (a *App) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 
 	case tcell.KeyF12:
-		// Exit application
-		a.Stop()
+		// Clear screen (3270 Master Clear)
+		if view := a.CurrentView(); view != nil {
+			view.Clear()
+		}
 		return nil
 	}
 
