@@ -117,3 +117,62 @@ After implementing the fix:
 ## Related Previous Fix
 
 **Commit 1deb777** fixed a related TAB key navigation issue where `screen.app` was not being initialized in view's `SetFocus` methods, preventing TAB from working at all. This fix corrected the initialization but did not address the menu option input being excluded from navigation.
+
+---
+
+## Implementation Notes
+
+### Changes Made
+
+**1. `internal/ui/components/screen.go`**
+- Added `focusOnMenu` field to `Screen` struct to track whether focus is currently on the menu option input
+- Modified `HandleKey` for `tcell.KeyTab`:
+  - When focus is on menu → moves to first form field
+  - When focus is on last form field → moves to menu option input
+  - Otherwise → moves to next form field
+- Modified `HandleKey` for `tcell.KeyBacktab`:
+  - When focus is on menu → moves to last form field
+  - When focus is on first form field → moves to menu option input
+  - Otherwise → moves to previous form field
+
+**2. `internal/ui/components/form.go`**
+- Added `IsAtLastEditableField()` method - returns true if current focus is on the last editable field
+- Added `IsAtFirstEditableField()` method - returns true if current focus is on the first editable field
+- Added `FocusFirstField(app)` method - sets focus to the first editable field
+- Added `FocusLastField(app)` method - sets focus to the last editable field
+- Updated `NextField()` and `PrevField()` to return a bool indicating whether navigation wrapped
+
+**3. `internal/ui/components/screen_test.go` (new file)**
+- Added regression tests for TAB navigation including menu option input
+- Added tests for BackTab navigation
+- Added tests for screens with only form (no menu)
+- Added tests for screens with only menu (no form)
+- Added unit tests for `IsAtLastEditableField` and `IsAtFirstEditableField`
+
+### Test Results
+
+All tests pass:
+```
+=== RUN   TestScreenTabNavigationIncludesMenuOption
+--- PASS: TestScreenTabNavigationIncludesMenuOption (0.00s)
+=== RUN   TestScreenBackTabNavigationIncludesMenuOption
+--- PASS: TestScreenBackTabNavigationIncludesMenuOption (0.00s)
+=== RUN   TestScreenTabNavigationNoMenu
+--- PASS: TestScreenTabNavigationNoMenu (0.00s)
+=== RUN   TestScreenTabNavigationNoForm
+--- PASS: TestScreenTabNavigationNoForm (0.00s)
+=== RUN   TestFormIsAtLastEditableField
+--- PASS: TestFormIsAtLastEditableField (0.00s)
+=== RUN   TestFormIsAtFirstEditableField
+--- PASS: TestFormIsAtFirstEditableField (0.00s)
+PASS
+ok      github.com/cicsdev/genapp/internal/ui/components        0.367s
+```
+
+Build succeeds with no errors.
+
+### Behavior After Fix
+
+1. **Customer View / Policy Views**: Users can now TAB through all form fields, and when they reach the last field, one more TAB moves focus to the "Select Option" input field where they can enter 1, 2, 3, or 4.
+2. **Shift+TAB (BackTab)**: Works in reverse - from the first form field, BackTab moves to the menu option input.
+3. **Main Menu**: Unchanged - continues to work as before since it has no form.

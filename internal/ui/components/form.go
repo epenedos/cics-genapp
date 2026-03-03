@@ -212,9 +212,10 @@ func (f *Form) Validate() (bool, string) {
 }
 
 // NextField moves focus to the next field.
-func (f *Form) NextField(app *tview.Application) {
+// Returns true if focus wrapped to the beginning (useful for external navigation).
+func (f *Form) NextField(app *tview.Application) bool {
 	if len(f.fields) == 0 {
-		return
+		return true
 	}
 
 	// Find next editable field
@@ -226,13 +227,68 @@ func (f *Form) NextField(app *tview.Application) {
 		}
 	}
 
+	// Check if we wrapped around (went past the last editable field)
+	wrapped := f.focusIndex <= startIndex && f.focusIndex != startIndex
+
 	app.SetFocus(f.fields[f.focusIndex].inputView)
+	return wrapped
+}
+
+// IsAtLastEditableField returns true if the current focus is on the last editable field.
+func (f *Form) IsAtLastEditableField() bool {
+	if len(f.fields) == 0 {
+		return true
+	}
+	// Check if there's any editable field after the current focus
+	for i := f.focusIndex + 1; i < len(f.fields); i++ {
+		if f.fields[i].Editable {
+			return false
+		}
+	}
+	return true
+}
+
+// IsAtFirstEditableField returns true if the current focus is on the first editable field.
+func (f *Form) IsAtFirstEditableField() bool {
+	if len(f.fields) == 0 {
+		return true
+	}
+	// Check if there's any editable field before the current focus
+	for i := 0; i < f.focusIndex; i++ {
+		if f.fields[i].Editable {
+			return false
+		}
+	}
+	return true
+}
+
+// FocusFirstField sets focus to the first editable field.
+func (f *Form) FocusFirstField(app *tview.Application) {
+	for i, field := range f.fields {
+		if field.Editable {
+			f.focusIndex = i
+			app.SetFocus(field.inputView)
+			return
+		}
+	}
+}
+
+// FocusLastField sets focus to the last editable field.
+func (f *Form) FocusLastField(app *tview.Application) {
+	for i := len(f.fields) - 1; i >= 0; i-- {
+		if f.fields[i].Editable {
+			f.focusIndex = i
+			app.SetFocus(f.fields[i].inputView)
+			return
+		}
+	}
 }
 
 // PrevField moves focus to the previous field.
-func (f *Form) PrevField(app *tview.Application) {
+// Returns true if focus wrapped to the end (useful for external navigation).
+func (f *Form) PrevField(app *tview.Application) bool {
 	if len(f.fields) == 0 {
-		return
+		return true
 	}
 
 	// Find previous editable field
@@ -247,7 +303,11 @@ func (f *Form) PrevField(app *tview.Application) {
 		}
 	}
 
+	// Check if we wrapped around (went before the first editable field)
+	wrapped := f.focusIndex >= startIndex && f.focusIndex != startIndex
+
 	app.SetFocus(f.fields[f.focusIndex].inputView)
+	return wrapped
 }
 
 // SetFocus sets focus to the first editable field or the field marked as InitialFocus.

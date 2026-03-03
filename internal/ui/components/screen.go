@@ -32,6 +32,9 @@ type Screen struct {
 
 	// Application reference for focus management
 	app *tview.Application
+
+	// Focus tracking: true when menu option input has focus
+	focusOnMenu bool
 }
 
 // NewScreen creates a new screen with the standard BMS layout.
@@ -211,16 +214,52 @@ func (s *Screen) HandleKey(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyTab:
-		// Move to next field
-		if s.form != nil && s.app != nil {
-			s.form.NextField(s.app)
-			return nil
+		// Move to next field, including menu option input in the cycle
+		if s.app != nil {
+			if s.focusOnMenu {
+				// Currently on menu option input, go to first form field
+				if s.form != nil {
+					s.form.FocusFirstField(s.app)
+					s.focusOnMenu = false
+				}
+				return nil
+			}
+			if s.form != nil {
+				// Check if we're at the last form field
+				if s.form.IsAtLastEditableField() && s.menu != nil {
+					// Move to menu option input
+					s.app.SetFocus(s.menu.OptionInput())
+					s.focusOnMenu = true
+					return nil
+				}
+				// Otherwise, move to next form field
+				s.form.NextField(s.app)
+				return nil
+			}
 		}
 	case tcell.KeyBacktab:
-		// Move to previous field
-		if s.form != nil && s.app != nil {
-			s.form.PrevField(s.app)
-			return nil
+		// Move to previous field, including menu option input in the cycle
+		if s.app != nil {
+			if s.focusOnMenu {
+				// Currently on menu option input, go to last form field
+				if s.form != nil {
+					s.form.FocusLastField(s.app)
+					s.focusOnMenu = false
+				}
+				return nil
+			}
+			if s.form != nil {
+				// Check if we're at the first form field
+				if s.form.IsAtFirstEditableField() && s.menu != nil {
+					// Move to menu option input
+					s.app.SetFocus(s.menu.OptionInput())
+					s.focusOnMenu = true
+					return nil
+				}
+				// Otherwise, move to previous form field
+				s.form.PrevField(s.app)
+				return nil
+			}
 		}
 	}
 	return event
