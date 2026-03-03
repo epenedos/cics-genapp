@@ -106,3 +106,50 @@ New proposed columns: `SetColumns(7, 1, 22, 20, 30, -1)`
 4. Verify input fields align at column 50 equivalent
 5. Verify tab navigation works correctly between fields
 6. Test all policy screens (SSP1, SSP2, SSP3, SSP4, SSP5)
+
+---
+
+## Implementation Notes (Completed)
+
+### Changes Made to `internal/ui/components/screen.go`
+
+**1. Updated Grid Column Widths**
+
+Changed from:
+```go
+SetColumns(7, 4, 18, 16, 20, -1)  // 6 columns
+```
+
+To:
+```go
+SetColumns(7, 22, 50, -1)  // 4 columns matching BMS positions
+```
+
+This correctly maps to BMS 80-column layout:
+- Column 0 (7 chars): Screen ID area (BMS cols 1-7)
+- Column 1 (22 chars): Menu area (BMS cols 8-29)
+- Column 2 (50 chars): Form area (BMS cols 30-79)
+- Column 3 (flex): Right margin
+
+**2. Updated Grid Item Placements**
+
+Changed item placements to use new column structure:
+- Screen ID: row 0, col 0, spans 1 column
+- Title: row 0, cols 1-3
+- Menu area: rows 3-6, col 1 only (not overlapping with form)
+- Form area: rows 3-17, cols 2-3
+- Option/Error areas: span all 4 columns
+
+**3. Fixed Form Area Position Calculations**
+
+Updated `setFormWithPositions()` to correctly offset BMS positions:
+- Form area container starts at BMS column 30
+- Field positions within form area are now calculated relative to position 0
+- BMS column positions are converted by subtracting the offset (30)
+
+### Test Results
+- `go build ./...` - Passed
+- `go test ./...` - All tests pass:
+  - `internal/repository` - OK
+  - `internal/service` - OK
+  - `internal/ui/components` - OK

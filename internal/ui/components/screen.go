@@ -41,10 +41,11 @@ type Screen struct {
 func NewScreen(screenID, title string) *Screen {
 	s := &Screen{}
 
-	// Create the main grid with 24 rows and flexible columns
+	// Create the main grid with 24 rows and columns matching BMS 80-column positions
+	// BMS layout: col 1-7 = screen ID, col 8-29 = menu area, col 30-79 = form area
 	s.grid = tview.NewGrid().
 		SetRows(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1). // 24 rows
-		SetColumns(7, 4, 18, 16, 20, -1). // Column layout to match BMS positions
+		SetColumns(7, 22, 50, -1). // col 0: screen ID (7), col 1: menu (22), col 2: form (50), col 3: flex
 		SetBorders(false)
 
 	// Row 1: Screen ID (bold, position 1)
@@ -82,21 +83,21 @@ func NewScreen(screenID, title string) *Screen {
 	s.errorArea.SetBackgroundColor(tcell.ColorDefault)
 
 	// Assemble the grid
-	// Row 0 (line 1): Screen ID and Title
-	s.grid.AddItem(s.screenID, 0, 0, 1, 2, 0, 0, false)
-	s.grid.AddItem(s.title, 0, 2, 1, 4, 0, 0, false)
+	// Row 0 (line 1): Screen ID at col 0, Title at col 1-3 (starts at BMS col 8/12)
+	s.grid.AddItem(s.screenID, 0, 0, 1, 1, 0, 0, false)
+	s.grid.AddItem(s.title, 0, 1, 1, 3, 0, 0, false)
 
-	// Rows 3-6 (lines 4-7): Menu area (left side)
-	s.grid.AddItem(s.menuArea, 3, 0, 4, 2, 0, 0, false)
+	// Rows 3-6 (lines 4-7): Menu area at col 1 (BMS col 8-29)
+	s.grid.AddItem(s.menuArea, 3, 1, 4, 1, 0, 0, false)
 
-	// Rows 3-17 (lines 4-18): Form area (right side)
-	s.grid.AddItem(s.formArea, 3, 2, 15, 4, 0, 0, true)
+	// Rows 3-17 (lines 4-18): Form area at col 2 (BMS col 30-79)
+	s.grid.AddItem(s.formArea, 3, 2, 15, 2, 0, 0, true)
 
-	// Row 21 (line 22): Option selection
-	s.grid.AddItem(s.optionArea, 21, 0, 1, 6, 0, 0, false)
+	// Row 21 (line 22): Option selection spans all columns
+	s.grid.AddItem(s.optionArea, 21, 0, 1, 4, 0, 0, false)
 
-	// Row 23 (line 24): Error message
-	s.grid.AddItem(s.errorArea, 23, 0, 1, 6, 0, 0, false)
+	// Row 23 (line 24): Error message spans all columns
+	s.grid.AddItem(s.errorArea, 23, 0, 1, 4, 0, 0, false)
 
 	return s
 }
@@ -197,29 +198,35 @@ func (s *Screen) setFormWithPositions(form *Form) {
 		// Sort fields by their column position
 		sortedFields := sortFieldsByColumn(fields)
 
-		// The form area column offset - labels start at column 30 in BMS
-		// which maps to column 0 in our form area (since form area starts at grid column 2)
-		const formAreaStartCol = 30
+		// Form area starts at BMS column 30, so we offset BMS positions accordingly
+		// A field at BMS column 30 should be at form area position 0
+		const formAreaOffset = 30
 
-		currentCol := formAreaStartCol
+		currentCol := 0 // Position within the form area (starts at 0)
 
 		for _, field := range sortedFields {
 			labelCol := field.LabelColumn
 			if labelCol == 0 {
-				labelCol = formAreaStartCol // Default to column 30
+				labelCol = formAreaOffset // Default to column 30
 			}
 			inputCol := field.Column
 			if inputCol == 0 {
 				inputCol = labelCol + 20 // Default offset
 			}
 
+			// Convert BMS columns to form area positions (subtract offset)
+			labelPosInForm := labelCol - formAreaOffset
+			if labelPosInForm < 0 {
+				labelPosInForm = 0
+			}
+
 			// Add spacer before label if needed
-			if labelCol > currentCol {
-				spacerWidth := labelCol - currentCol
+			if labelPosInForm > currentCol {
+				spacerWidth := labelPosInForm - currentCol
 				spacer := tview.NewBox()
 				spacer.SetBackgroundColor(tcell.ColorDefault)
 				rowFlex.AddItem(spacer, spacerWidth, 0, false)
-				currentCol = labelCol
+				currentCol = labelPosInForm
 			}
 
 			// Calculate label width (from labelCol to inputCol)
