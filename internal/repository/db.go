@@ -28,10 +28,10 @@ type DBConfig struct {
 func DefaultConfig() DBConfig {
 	return DBConfig{
 		Host:            "localhost",
-		Port:            5432,
-		User:            "postgres",
-		Password:        "postgres",
-		Database:        "genapp",
+		Port:            5433,
+		User:            "genapp",
+		Password:        "genapp_secret",
+		Database:        "genapp_test",
 		SSLMode:         "disable",
 		MaxOpenConns:    25,
 		MaxIdleConns:    5,

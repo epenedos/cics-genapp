@@ -19,6 +19,7 @@ type Config struct {
 
 	// Application settings
 	LogLevel string `mapstructure:"log_level"`
+	LogFile  string `mapstructure:"log_file"`
 }
 
 // DatabaseConfig holds database connection settings.
@@ -89,10 +90,10 @@ func Load() (*Config, error) {
 func setDefaults(v *viper.Viper) {
 	// Database defaults
 	v.SetDefault("database.host", "localhost")
-	v.SetDefault("database.port", 5432)
+	v.SetDefault("database.port", 5433)
 	v.SetDefault("database.user", "genapp")
-	v.SetDefault("database.password", "genapp")
-	v.SetDefault("database.dbname", "genapp")
+	v.SetDefault("database.password", "genapp_secret")
+	v.SetDefault("database.dbname", "genapp_test")
 	v.SetDefault("database.sslmode", "disable")
 
 	// Server defaults
@@ -101,4 +102,5 @@ func setDefaults(v *viper.Viper) {
 
 	// Application defaults
 	v.SetDefault("log_level", "info")
+	v.SetDefault("log_file", "genapp.log")
 }

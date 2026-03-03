@@ -17,7 +17,7 @@ func setupTestDB(t *testing.T) *DB {
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "host=localhost port=5432 user=postgres password=postgres dbname=genapp_test sslmode=disable"
+		dsn = "host=localhost port=5433 user=postgres password=postgres dbname=genapp_test sslmode=disable"
 	}
 
 	db, err := NewDBFromDSN(dsn)
