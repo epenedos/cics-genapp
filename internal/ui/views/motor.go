@@ -33,7 +33,7 @@ func NewMotorPolicyView() *MotorPolicyView {
 	// Create the menu matching SSMAPP1
 	v.menu = components.PolicyMenu()
 
-	// Create the form with motor policy fields
+	// Create the form with motor policy fields (BMS positions from SSMAPP1)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Number",
@@ -44,6 +44,9 @@ func NewMotorPolicyView() *MotorPolicyView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Cust Number",
@@ -53,34 +56,49 @@ func NewMotorPolicyView() *MotorPolicyView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          5,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Issue date",
-		Name:      "issue_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Issue date",
+		Name:        "issue_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         6,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Expiry date",
-		Name:      "expiry_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Expiry date",
+		Name:        "expiry_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Car Make",
-		Name:      "car_make",
-		MaxLength: 15,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Car Make",
+		Name:        "car_make",
+		MaxLength:   15,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         8,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Car Model",
-		Name:      "car_model",
-		MaxLength: 15,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Car Model",
+		Name:        "car_model",
+		MaxLength:   15,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         9,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Car Value",
@@ -89,20 +107,29 @@ func NewMotorPolicyView() *MotorPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          10,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Registration",
-		Name:      "registration",
-		MaxLength: 7,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Registration",
+		Name:        "registration",
+		MaxLength:   7,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Car Colour",
-		Name:      "car_colour",
-		MaxLength: 8,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Car Colour",
+		Name:        "car_colour",
+		MaxLength:   8,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         12,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "CC",
@@ -111,13 +138,19 @@ func NewMotorPolicyView() *MotorPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          13,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Manufacture Date",
-		Name:      "manufactured",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Manufacture Date",
+		Name:        "manufactured",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         14,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "No. Accidents",
@@ -126,6 +159,9 @@ func NewMotorPolicyView() *MotorPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          15,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Premium",
@@ -134,6 +170,9 @@ func NewMotorPolicyView() *MotorPolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          16,
+		LabelColumn:  30,
+		Column:       50,
 	})
 
 	// Set up the screen

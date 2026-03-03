@@ -37,6 +37,11 @@ type FormField struct {
 	RightJustify bool
 	ZeroPad      bool
 
+	// BMS position fields (1-indexed to match BMS coordinates)
+	Row         int // Row position (1-24), 0 means auto-layout
+	LabelColumn int // Column position for label (1-80), 0 means auto-layout
+	Column      int // Column position for input field (1-80), 0 means auto-layout
+
 	// Internal tview components
 	labelView *tview.TextView
 	inputView *tview.InputField

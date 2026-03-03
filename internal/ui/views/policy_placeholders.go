@@ -24,6 +24,7 @@ func NewCommercialPolicyView() *CommercialPolicyView {
 	// Commercial has no update option
 	v.menu = components.CommercialPolicyMenu()
 
+	// Create the form with commercial policy fields (BMS positions from SSMAPP4)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Number",
@@ -34,6 +35,9 @@ func NewCommercialPolicyView() *CommercialPolicyView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Cust Number",
@@ -43,62 +47,89 @@ func NewCommercialPolicyView() *CommercialPolicyView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          5,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Start date",
-		Name:      "issue_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Start date",
+		Name:        "issue_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         6,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Expiry date",
-		Name:      "expiry_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Expiry date",
+		Name:        "expiry_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Address",
-		Name:      "address",
-		MaxLength: 25,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Address",
+		Name:        "address",
+		MaxLength:   25,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         8,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Postcode",
-		Name:      "postcode",
-		MaxLength: 8,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Postcode",
+		Name:        "postcode",
+		MaxLength:   8,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         9,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Latitude",
-		Name:      "latitude",
-		MaxLength: 11,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Latitude",
+		Name:        "latitude",
+		MaxLength:   11,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         10,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Longitude",
-		Name:      "longitude",
-		MaxLength: 11,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Longitude",
+		Name:        "longitude",
+		MaxLength:   11,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Customer Name",
-		Name:      "customer_name",
-		MaxLength: 25,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Customer Name",
+		Name:        "customer_name",
+		MaxLength:   25,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         12,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Property Type",
-		Name:      "property_type",
-		MaxLength: 25,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Property Type",
+		Name:        "property_type",
+		MaxLength:   25,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         13,
+		LabelColumn: 30,
+		Column:      50,
 	})
 
 	v.screen.SetMenu(v.menu)
@@ -164,6 +195,7 @@ func NewClaimView() *ClaimView {
 
 	v.menu = components.ClaimMenu()
 
+	// Create the form with claim fields (BMS positions from SSMAPP5)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Claim Number",
@@ -174,6 +206,9 @@ func NewClaimView() *ClaimView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Number",
@@ -183,6 +218,9 @@ func NewClaimView() *ClaimView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          5,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Customer Number",
@@ -192,13 +230,19 @@ func NewClaimView() *ClaimView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          6,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Claim date",
-		Name:      "claim_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Claim date",
+		Name:        "claim_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Paid",
@@ -208,6 +252,9 @@ func NewClaimView() *ClaimView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          8,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Value",
@@ -217,20 +264,29 @@ func NewClaimView() *ClaimView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          9,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Cause",
-		Name:      "cause",
-		MaxLength: 25,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Cause",
+		Name:        "cause",
+		MaxLength:   25,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         10,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Observation",
-		Name:      "observations",
-		MaxLength: 25,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Observation",
+		Name:        "observations",
+		MaxLength:   25,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 
 	v.screen.SetMenu(v.menu)

@@ -171,3 +171,58 @@ The fix requires changes to:
 7. `internal/ui/views/policy_placeholders.go` - Add position data to field definitions
 
 Note: There are pre-existing compilation errors in the codebase (SetOnSubmit, CustomerService, PolicyService undefined). These should be addressed as part of the fix or in a separate task.
+
+---
+
+## Implementation Complete
+
+### Changes Made
+
+**1. `internal/ui/components/form.go`** - Added position fields to FormField struct:
+```go
+type FormField struct {
+    // ... existing fields ...
+    Row         int // Row position (1-24), 0 means auto-layout
+    LabelColumn int // Column position for label (1-80), 0 means auto-layout
+    Column      int // Column position for input field (1-80), 0 means auto-layout
+    // ...
+}
+```
+
+**2. `internal/ui/components/screen.go`** - Refactored SetForm() to support position-based layout:
+- Added `setFormWithPositions()` for BMS-compliant positioning
+- Added `setFormSequential()` for legacy fallback behavior
+- Added `sortFieldsByColumn()` helper to order fields by column position
+- Added `getFieldStartCol()` helper to determine field start column
+- Fields are now grouped by row and positioned based on their BMS coordinates
+
+**3. View files updated with BMS positions:**
+- `internal/ui/views/customer.go` - SSMAPC1 positions (rows 4-13, labels at col 30, inputs at col 50)
+- `internal/ui/views/motor.go` - SSMAPP1 positions (rows 4-16, labels at col 30, inputs at col 50)
+- `internal/ui/views/house.go` - SSMAPP3 positions (rows 4-13, labels at col 30, inputs at col 50)
+- `internal/ui/views/endowment.go` - SSMAPP2 positions (rows 4-14, labels at col 30, inputs at col 50)
+- `internal/ui/views/policy_placeholders.go` - SSMAPP4/SSMAPP5 positions for Commercial and Claim views
+
+### Test Results
+
+```
+$ go build ./...
+# Successful - no errors
+
+$ go test ./...
+ok  	github.com/cicsdev/genapp/internal/repository	0.541s
+ok  	github.com/cicsdev/genapp/internal/service	0.939s
+ok  	github.com/cicsdev/genapp/internal/ui/components	0.672s
+```
+
+All tests pass. The implementation is backward-compatible - views without position data will continue to use the sequential layout.
+
+### Key Implementation Details
+
+1. **Automatic detection**: The `SetForm()` method automatically detects if any field has position data and switches between position-based and sequential layout modes.
+
+2. **Row grouping**: Fields are grouped by their BMS row number, allowing multiple fields on the same row (though current screens only have one field per row).
+
+3. **Column spacing**: Labels are positioned at their `LabelColumn` position, with the label width calculated as the difference between `Column` and `LabelColumn`. Input fields start exactly at their `Column` position.
+
+4. **Backward compatibility**: Views without position data (Row=0, Column=0) fall back to the original sequential layout behavior.

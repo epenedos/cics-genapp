@@ -32,7 +32,7 @@ func NewHousePolicyView() *HousePolicyView {
 	// Create the menu matching SSMAPP3
 	v.menu = components.PolicyMenu()
 
-	// Create the form with house policy fields
+	// Create the form with house policy fields (BMS positions from SSMAPP3)
 	v.form = components.NewForm()
 	v.form.AddField(&components.FormField{
 		Label:        "Policy Number",
@@ -43,6 +43,9 @@ func NewHousePolicyView() *HousePolicyView {
 		InitialFocus: true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          4,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Cust Number",
@@ -52,27 +55,39 @@ func NewHousePolicyView() *HousePolicyView {
 		Editable:     true,
 		RightJustify: true,
 		ZeroPad:      true,
+		Row:          5,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Issue date",
-		Name:      "issue_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Issue date",
+		Name:        "issue_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         6,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Expiry date",
-		Name:      "expiry_date",
-		MaxLength: 10,
-		FieldType: components.FieldTypeDate,
-		Editable:  true,
+		Label:       "Expiry date",
+		Name:        "expiry_date",
+		MaxLength:   10,
+		FieldType:   components.FieldTypeDate,
+		Editable:    true,
+		Row:         7,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Property Type",
-		Name:      "property_type",
-		MaxLength: 15,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Property Type",
+		Name:        "property_type",
+		MaxLength:   15,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         8,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "Bedrooms",
@@ -81,6 +96,9 @@ func NewHousePolicyView() *HousePolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          9,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
 		Label:        "House Value",
@@ -89,27 +107,39 @@ func NewHousePolicyView() *HousePolicyView {
 		FieldType:    components.FieldTypeNumeric,
 		Editable:     true,
 		RightJustify: true,
+		Row:          10,
+		LabelColumn:  30,
+		Column:       50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "House Name",
-		Name:      "house_name",
-		MaxLength: 20,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "House Name",
+		Name:        "house_name",
+		MaxLength:   20,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         11,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "House Number",
-		Name:      "house_number",
-		MaxLength: 4,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "House Number",
+		Name:        "house_number",
+		MaxLength:   4,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         12,
+		LabelColumn: 30,
+		Column:      50,
 	})
 	v.form.AddField(&components.FormField{
-		Label:     "Postcode",
-		Name:      "postcode",
-		MaxLength: 8,
-		FieldType: components.FieldTypeText,
-		Editable:  true,
+		Label:       "Postcode",
+		Name:        "postcode",
+		MaxLength:   8,
+		FieldType:   components.FieldTypeText,
+		Editable:    true,
+		Row:         13,
+		LabelColumn: 30,
+		Column:      50,
 	})
 
 	// Set up the screen
