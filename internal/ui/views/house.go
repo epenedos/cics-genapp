@@ -518,7 +518,7 @@ func (v *HousePolicyView) HandleKey(event *tcell.EventKey) *tcell.EventKey {
 // SetFocus sets focus to the policy number field.
 func (v *HousePolicyView) SetFocus(app *tview.Application) {
 	v.app = app
-	v.form.SetFocus(app)
+	v.screen.SetFocus(app)
 }
 
 // Clear resets all form fields and the menu selection.

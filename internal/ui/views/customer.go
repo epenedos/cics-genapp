@@ -438,7 +438,7 @@ func (v *CustomerView) HandleKey(event *tcell.EventKey) *tcell.EventKey {
 // SetFocus sets focus to the customer number field.
 func (v *CustomerView) SetFocus(app *tview.Application) {
 	v.app = app
-	v.form.SetFocus(app)
+	v.screen.SetFocus(app)
 }
 
 // Clear resets all form fields and the menu selection.

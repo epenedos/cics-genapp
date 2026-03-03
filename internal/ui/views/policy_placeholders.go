@@ -132,7 +132,7 @@ func (v *CommercialPolicyView) HandleKey(event *tcell.EventKey) *tcell.EventKey 
 
 func (v *CommercialPolicyView) SetFocus(app *tview.Application) {
 	v.app = app
-	v.form.SetFocus(app)
+	v.screen.SetFocus(app)
 }
 
 // Clear resets all form fields and the menu selection.
@@ -264,7 +264,7 @@ func (v *ClaimView) HandleKey(event *tcell.EventKey) *tcell.EventKey {
 
 func (v *ClaimView) SetFocus(app *tview.Application) {
 	v.app = app
-	v.form.SetFocus(app)
+	v.screen.SetFocus(app)
 }
 
 // Clear resets all form fields and the menu selection.

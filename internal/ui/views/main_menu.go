@@ -90,5 +90,5 @@ func (v *MainMenuView) HandleKey(event *tcell.EventKey) *tcell.EventKey {
 // SetFocus sets focus to the menu option input.
 func (v *MainMenuView) SetFocus(app *tview.Application) {
 	v.app = app
-	app.SetFocus(v.menu.OptionInput())
+	v.screen.SetFocus(app)
 }
