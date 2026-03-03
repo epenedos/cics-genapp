@@ -145,3 +145,39 @@ This would require updating the call chain but avoids the need to maintain state
 4. Press Shift+TAB - should move to previous form field
 5. Repeat for Motor, Endowment, House, Commercial, and Claim screens
 6. Verify Main Menu screen doesn't break (no form navigation expected)
+
+---
+
+## Implementation Notes
+
+### Fix Applied
+
+Applied **Option 1** as recommended. Updated the `SetFocus()` method in all affected views to call `v.screen.SetFocus(app)` instead of bypassing it.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `internal/ui/views/customer.go:441` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` |
+| `internal/ui/views/motor.go:598` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` |
+| `internal/ui/views/endowment.go:545` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` |
+| `internal/ui/views/house.go:521` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` |
+| `internal/ui/views/policy_placeholders.go:135` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` (CommercialPolicyView) |
+| `internal/ui/views/policy_placeholders.go:267` | Changed `v.form.SetFocus(app)` to `v.screen.SetFocus(app)` (ClaimView) |
+| `internal/ui/views/main_menu.go:93` | Changed `app.SetFocus(v.menu.OptionInput())` to `v.screen.SetFocus(app)` |
+
+### Test Results
+
+- Build: PASS (`go build ./...`)
+- Tests: PASS (`go test ./...`)
+  - `internal/repository`: ok
+  - `internal/service`: ok
+  - No UI tests exist in the codebase
+
+### Why This Fix Works
+
+The fix ensures that when any view's `SetFocus()` is called, it delegates to `Screen.SetFocus(app)` which:
+1. Sets `s.app = app` on the Screen component
+2. Properly initializes focus on the form or menu
+
+With `s.app` properly initialized, the TAB key handler in `Screen.HandleKey()` can now execute `s.form.NextField(s.app)` and `s.form.PrevField(s.app)` successfully.
