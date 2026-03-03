@@ -74,6 +74,10 @@ func (m *Menu) SetOptions(options []MenuOption) *Menu {
 func (m *Menu) updateDisplay() {
 	text := ""
 	for _, opt := range m.options {
+		// Skip disabled options with empty labels (reserved/placeholder slots)
+		if !opt.Enabled && opt.Label == "" {
+			continue
+		}
 		if opt.Enabled {
 			text += fmt.Sprintf("%s. %s\n", opt.Key, opt.Label)
 		} else {

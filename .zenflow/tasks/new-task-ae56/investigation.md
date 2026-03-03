@@ -151,3 +151,104 @@ After implementing the fix:
 ### Additional Notes
 
 The codebase has several compilation errors related to `components.FormatCustomerNum` and `components.FormatPolicyNum` being undefined. These are separate issues that should be addressed but are not directly related to the menu display bug.
+
+---
+
+## Implementation Notes
+
+### Changes Made
+
+**File: `internal/ui/components/menu.go`**
+
+Modified the `updateDisplay()` function (lines 73-88) to skip disabled options with empty labels:
+
+```go
+func (m *Menu) updateDisplay() {
+    text := ""
+    for _, opt := range m.options {
+        // Skip disabled options with empty labels (reserved/placeholder slots)
+        if !opt.Enabled && opt.Label == "" {
+            continue
+        }
+        if opt.Enabled {
+            text += fmt.Sprintf("%s. %s\n", opt.Key, opt.Label)
+        } else {
+            // Show disabled options in a different color
+            text += fmt.Sprintf("[gray]%s. %s[-]\n", opt.Key, opt.Label)
+        }
+    }
+    m.optionsDisplay.SetText(text)
+}
+```
+
+The key change is the addition of:
+```go
+if !opt.Enabled && opt.Label == "" {
+    continue
+}
+```
+
+This ensures that placeholder/reserved menu slots (like option 3 in the Customer menu) are not rendered at all, rather than showing an empty line like `"3. "`.
+
+### Tests Added
+
+**File: `internal/ui/components/menu_test.go`** (new file)
+
+Added comprehensive tests to verify the fix:
+
+1. `TestMenuDisplaySkipsDisabledEmptyLabels` - Core regression test for the bug
+2. `TestMenuDisplayShowsDisabledOptionsWithLabels` - Ensures disabled options WITH labels still display
+3. `TestCustomerMenuDisplaysCorrectOptions` - Verifies Customer menu shows 1, 2, 4 (not 3)
+4. `TestPolicyMenuDisplaysAllOptions` - Verifies Policy menu shows all 4 options
+5. `TestCommercialPolicyMenuDisplaysThreeOptions` - Verifies Commercial menu shows 1-3
+6. `TestClaimMenuDisplaysTwoOptions` - Verifies Claim menu shows 1-2
+
+### Test Results
+
+All tests pass:
+```
+=== RUN   TestMenuDisplaySkipsDisabledEmptyLabels
+--- PASS: TestMenuDisplaySkipsDisabledEmptyLabels (0.00s)
+=== RUN   TestMenuDisplayShowsDisabledOptionsWithLabels
+--- PASS: TestMenuDisplayShowsDisabledOptionsWithLabels (0.00s)
+=== RUN   TestCustomerMenuDisplaysCorrectOptions
+--- PASS: TestCustomerMenuDisplaysCorrectOptions (0.00s)
+=== RUN   TestPolicyMenuDisplaysAllOptions
+--- PASS: TestPolicyMenuDisplaysAllOptions (0.00s)
+=== RUN   TestCommercialPolicyMenuDisplaysThreeOptions
+--- PASS: TestCommercialPolicyMenuDisplaysThreeOptions (0.00s)
+=== RUN   TestClaimMenuDisplaysTwoOptions
+--- PASS: TestClaimMenuDisplaysTwoOptions (0.00s)
+```
+
+### Expected Behavior After Fix
+
+**Customer Screen** now displays:
+```
+1. Cust Inquiry
+2. Cust Add
+4. Cust Update
+```
+
+(Option 3 is correctly hidden since it's a disabled placeholder)
+
+**Policy Screens** (Motor, Endowment, House) continue to display:
+```
+1. Policy Inquiry
+2. Policy Add
+3. Policy Delete
+4. Policy Update
+```
+
+**Commercial Screen** displays:
+```
+1. Policy Inquiry
+2. Policy Add
+3. Policy Delete
+```
+
+**Claim Screen** displays:
+```
+1. Claim Inquiry
+2. Claim Add
+```
