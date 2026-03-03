@@ -75,8 +75,9 @@ func (f *Form) AddField(field *FormField) *Form {
 	field.labelView.SetBackgroundColor(tcell.ColorDefault)
 
 	// Create the input field
+	// Add 1 to MaxLength for field width to account for cursor space in tview
 	field.inputView = tview.NewInputField().
-		SetFieldWidth(field.MaxLength).
+		SetFieldWidth(field.MaxLength + 1).
 		SetAcceptanceFunc(f.getAcceptanceFunc(field.FieldType, field.MaxLength))
 
 	// Style the input field

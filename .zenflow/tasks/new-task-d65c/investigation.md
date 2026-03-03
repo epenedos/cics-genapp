@@ -85,3 +85,60 @@ The proposed solution is cleaner as it only requires one change in one location.
 3. Verify all 10 digits are visible in the input field
 4. Verify the customer inquiry returns the correct customer
 5. Test other numeric fields (policy numbers) to ensure they also display correctly
+
+---
+
+## Implementation Notes
+
+### Changes Made
+
+**File:** `internal/ui/components/form.go`
+**Line:** 79
+
+Changed:
+```go
+SetFieldWidth(field.MaxLength)
+```
+
+To:
+```go
+SetFieldWidth(field.MaxLength + 1)
+```
+
+Added a comment explaining why +1 is needed:
+```go
+// Add 1 to MaxLength for field width to account for cursor space in tview
+```
+
+### Regression Tests Added
+
+**File:** `internal/ui/components/form_test.go`
+
+Added the following tests:
+
+1. **`TestInputFieldWidthIncludesCursorSpace`** - Verifies that input fields are configured with `fieldWidth = MaxLength + 1`. Tests customer number (10 digits), policy number (10 digits), small fields (5 digits), and single digit fields.
+
+2. **`TestInputFieldAcceptsMaxLengthCharacters`** - Verifies that 10-digit values can be typed and stored correctly.
+
+3. **`TestNumericFieldRejectsNonDigits`** - Verifies that numeric fields only accept digits (0-9).
+
+4. **`TestFieldWidthForAllFieldTypes`** - Verifies that all field types (Text, Numeric, Date, YesNo, Decimal) get the correct width configuration.
+
+### Test Results
+
+```
+=== RUN   TestInputFieldWidthIncludesCursorSpace
+=== RUN   TestInputFieldWidthIncludesCursorSpace/CustomerNumber_10digits
+=== RUN   TestInputFieldWidthIncludesCursorSpace/PolicyNumber_10digits
+=== RUN   TestInputFieldWidthIncludesCursorSpace/SmallField_5digits
+=== RUN   TestInputFieldWidthIncludesCursorSpace/SingleDigit
+--- PASS: TestInputFieldWidthIncludesCursorSpace (0.00s)
+...
+PASS
+ok  	github.com/cicsdev/genapp/internal/ui/components	0.307s
+```
+
+All tests pass. The fix ensures that:
+1. All `MaxLength` characters are visible in the input field
+2. The acceptance function still correctly limits input to `MaxLength` characters
+3. All field types (Text, Numeric, Date, YesNo, Decimal) benefit from this fix
