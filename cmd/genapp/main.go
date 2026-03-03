@@ -41,8 +41,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Set up zerolog - disable for TUI mode as it interferes with the terminal
-	// In production, logs should go to a file
+	// Disable logging initially so it doesn't interfere with the TUI
 	zerolog.SetGlobalLevel(zerolog.Disabled)
 
 	// Load configuration
@@ -52,12 +51,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set log level from config (if logging to file is enabled later)
-	level, err := zerolog.ParseLevel(cfg.LogLevel)
-	if err != nil {
-		level = zerolog.InfoLevel
+	// Set up file-based logging if configured
+	if cfg.LogFile != "" {
+		logFile, err := os.OpenFile(cfg.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to open log file %s: %v\n", cfg.LogFile, err)
+			os.Exit(1)
+		}
+		defer logFile.Close()
+
+		log.Logger = zerolog.New(logFile).With().Timestamp().Logger()
+
+		level, err := zerolog.ParseLevel(cfg.LogLevel)
+		if err != nil {
+			level = zerolog.InfoLevel
+		}
+		zerolog.SetGlobalLevel(level)
 	}
-	_ = level // Will be used when file logging is enabled
 
 	log.Info().
 		Str("app", AppName).
